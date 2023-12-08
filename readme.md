@@ -6,6 +6,7 @@
 - 支持自定义检测关键词
 - 支持wechat，wechat business
 - 支持发送给不同的好友
+- 支持超时时间和轮询间隔时间自定义
 
 ## 软件使用流程图
 
@@ -13,7 +14,7 @@
 
 ## 软件界面
 
-![image-20231208134337116](image-20231208134337116.png)
+![image-20231208134337116](.\doc\image-20231208134337116.png)
 
 ## 开发人员使用指南
 
@@ -22,5 +23,6 @@ pipenv shell #创建pipenv环境
 pipenv install -r requirements.txt #还原本工程pipenv环境
 pipenv list #查询库是否安装成功
 python LogWatcherWithWechat.py #运行程序 
+pipenv run pyinstaller --onefile --ico=.\doc\LogWatcherWithWechat.ico docLogWatcherWithWechat.py
 ```
 
