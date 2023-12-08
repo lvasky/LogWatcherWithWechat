@@ -1,5 +1,12 @@
 # LogWatcherWithWechat
 
+## 功能介绍
+
+- 支持vivado软件/安路fpga软件的log，当检测到bit文件生成时结束，并微信提醒
+- 支持自定义检测关键词
+- 支持wechat，wechat business
+- 支持发送给不同的好友
+
 ## 软件使用流程图
 
 ![image-20231208134319973](doc/image-20231208134319973.png)
