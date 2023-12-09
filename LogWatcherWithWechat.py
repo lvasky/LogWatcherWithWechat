@@ -24,8 +24,8 @@ def alert_user():
     msg_window.title("提醒")
     msg_window.attributes("-topmost", True)
 
-    custom_font = Font(family="Helvetica", size=12, weight="bold")
-    Label(msg_window, text="\n!!! 5s后开始发送微信消息!!!\n  如果不需要,请关闭Windows命令窗口 \n", font=custom_font).pack()
+    custom_font = Font(family="Helvetica", size=12, weight="bold")  
+    Label(msg_window, text="\n!!! 5s后开始发送微信消息!!!\n  如果不需要,请关闭Windows命令窗口 \n", font=custom_font, fg="red").pack()
     
     root.after(4000, root.destroy)
     root.mainloop()
@@ -94,7 +94,7 @@ def check_last_lines_of_log(log_file_path, contents, check_strs, n=10):
 
 # Function to continuously check a log file
 def continuously_check_log(log_file_path, contents, check_strs, interval=20,timeout_cnt=12,  n=20):
-    print("$ 开始持续侦测中,如果log文件" + str(timeout_cnt * interval) + "s没有更新,\n判定结束...")
+    print("$ 开始持续侦测中,如果log文件" + str(timeout_cnt * interval) + "s没有更新,则判定结束...")
     pre_last_lines = None
     cnt = 0
     while not stop_event.is_set():
@@ -171,16 +171,16 @@ def say_hello(check_dic , apptype_dic):
         
     print("最终选择的软件是:" + apptype_dic[key_input])
     print("-------------------------------------------------------------")
-    print("$ 选择查询间隔时间(20s)和文件不更新后判定失败的检测次数(12次)")
-    interval_sec = input("$ 请输入查询间隔时间():")
-    timeout_cnt =  input("$ 请输入判定失败的所需检测次数():")
+    print("$ 选择查询间隔时间和文件不更新后判定失败的检测次数,如果不输入,则默认为20s和3次")
+    interval_sec = input("$ 请输入查询间隔时间:")
+    timeout_cnt =  input("$ 请输入判定失败的所需检测次数:")
     if interval_sec == "":
         interval_sec = 20
     else :
         interval_sec = int(interval_sec)
     
     if timeout_cnt == "":
-        timeout_cnt = 12
+        timeout_cnt = 3
     else:
         timeout_cnt = int(timeout_cnt)
 
