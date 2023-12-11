@@ -11,6 +11,12 @@ from collections import deque
 import tkinter.filedialog as filedialog
 from threading import Event
 
+from enum import Enum, auto
+
+class LogAppType(Enum):
+    OTHER = 0  # 0
+    VIVADO = 1  # 1
+
 # Global stop event for thread synchronization
 stop_event = Event()
 
@@ -88,44 +94,78 @@ def check_last_lines_of_log(log_file_path, contents, check_strs, n=10):
             if check_str in line:
                 contents.append("".join(last_lines))
                 contents.append("任务完成")
-                print("$ 检测到关键词: " + check_str + ",\n任务完成...")
+                print("$ 检测到关键词: " + check_str)
                 return True, last_lines
     return False, last_lines
 
 # Function to continuously check a log file
-def continuously_check_log(log_file_path, contents, check_strs, interval=20,timeout_cnt=12,  n=20):
-    print("$ 开始持续侦测中,如果log文件" + str(timeout_cnt * interval) + "s没有更新,则判定结束...")
+def continuously_check_log(logApp_type, log_file_path, contents, check_strs, interval=20, timeout_cnt=12, n=20):
+    print("$ 如果log文件" + str(timeout_cnt * interval) + "s没有更新,则判定结束;\n持续侦测中...")
     pre_last_lines = None
     cnt = 0
+    synthesis_end_flag = False
+    found = False
+
     while not stop_event.is_set():
-        found, last_lines = check_last_lines_of_log(log_file_path, contents, check_strs, n)
+        # vivado软件需要检测synth和impl两个log文件
+        if logApp_type == LogAppType.VIVADO.value :
+            if not synthesis_end_flag:
+                synthesis_end_flag, last_lines = check_last_lines_of_log(log_file_path + "/synth_1/runme.log", contents, ["synth_design completed successfully"])
+            elif synthesis_end_flag and not found:
+                found, last_lines = check_last_lines_of_log(log_file_path + "/impl_1/runme.log", contents, ["Bitgen Completed Successfully"])
+        # 其他软件只需要检测一个log文件
+        else:
+            found, last_lines = check_last_lines_of_log(log_file_path, contents, check_strs, n)
+        
         if last_lines == pre_last_lines:
             cnt += 1
         else:
             cnt = 0
+
         if cnt > timeout_cnt:
             contents.append("".join(last_lines))
             contents.append("任务失败")
             print("$ 检测到log文件" + str(timeout_cnt * interval) + "s没有更新,判定任务失败...")
             break
+
         pre_last_lines = last_lines
+
         if found:
+            print("$ 检测到所有关键词,任务完成")
             break
+
         time.sleep(interval)
 
+# ...
+
+
 # Function to select a file
-def select_file():
+def select_file(logApp_type):
     root = tk.Tk()
     root.attributes("-topmost", True)
     root.withdraw()
-    print("$ 选择要监控的log文件")
-    time.sleep(1)
-    file_path = filedialog.askopenfilename()
+    
+    if logApp_type == LogAppType.VIVADO.value:
+        print("$ 选择要监控的vivado工程下的proj_name.runs目录")
+        time.sleep(2)
+        file_path = filedialog.askdirectory()
+        print("* 收到的vivado_Workpath: "+ file_path)
+    else:
+        print("$ 选择要监控的log文件")
+        time.sleep(2)
+        file_path = filedialog.askopenfilename()
+        print("* 收到的log_Filepath: "+ file_path)
+    
     root.destroy()
-    print("* 收到的log_path: "+ file_path)
     print("-------------------------------------------------------------")
     return file_path
 
+def input_num(word):
+    try:
+        num = int(input(word))
+    except ValueError:
+        num = 0
+    return num
 # Function to prompt user input
 def say_hello(check_dic , apptype_dic):
     check_strs = []
@@ -137,33 +177,33 @@ def say_hello(check_dic , apptype_dic):
     print("* 请确保你的微信电脑版已经登录了.")
     print("* 请确保你的fpga软件已经开始运行了.")
     print("-------------------------------------------------------------")
-    print("$ 默认采用以下检测关键词:")
-    for key, value in check_dic.items():
-        print("* " + key + " : " + value)
-        check_strs.append(value)
-    print("-------------------------------------------------------------")
-    if input("$ 是否需要修改关键词？(y/n)") == "y":
-        check_strs = []
-        while True:
-            value = input("$ 请输入检测关键词(输入q退出):")
-            if value in ["q", ""]:
-                break
-            check_strs.append(value)
+    print("$ 选择要监控的产生log文件的软件类型: \n  0 - 其他(监控用户选择的log文件及其关键词) , \n  1 - vivado软件(监控vivado目录的synth和impl)")
+    logApp_type = lambda:input_num("$ 请输入软件类型序号(不填为0):")
+    logApp_type = logApp_type()
     
-    print("$ 以下为要生效的关键词:")
-    for check_str in check_strs:
-        print("* " + check_str)
-    print("-------------------------------------------------------------")
+    if logApp_type == LogAppType.OTHER.value:
+        print("$ 默认采用以下检测关键词:")
+        for key, value in check_dic.items():
+            print("* " + key + " : " + value)
+            check_strs.append(value)
+        print("-------------------------------------------------------------")
+        if input("$ 是否需要修改关键词？(y/n)") == "y":
+            check_strs = []
+            while True:
+                value = input("$ 请输入检测关键词(输入q退出):")
+                if value in ["q", ""]:
+                    break
+                check_strs.append(value)
+        
+        print("$ 以下为要生效的关键词:")
+        for check_str in check_strs:
+            print("* " + check_str)
 
-    friend_name = input("$ 请输入微信好友，想把消息发给谁，如果不输入，默认为'文件传输助手':")
-    if not friend_name:
-        friend_name = "文件传输助手"
-    print("The friend's name is: " + friend_name)
     print("-------------------------------------------------------------")
-    print("$ 可供选择的软件列表:")
+    print("$ 可供选择的通信软件列表:")
     for key, value in apptype_dic.items():
         print("* " + key + " : " + value)
-    key_input = input("$ 请选择要使用的软件:")
+    key_input = input("$ 请选择要使用的通信软件(不输入为wechat):")
     # if key_input == "":
     #     key_input = "0"
     if key_input not in set(apptype_dic.keys()):
@@ -171,31 +211,39 @@ def say_hello(check_dic , apptype_dic):
         
     print("最终选择的软件是:" + apptype_dic[key_input])
     print("-------------------------------------------------------------")
-    print("$ 选择查询间隔时间和文件不更新后判定失败的检测次数,如果不输入,则默认为20s和3次")
-    interval_sec = input("$ 请输入查询间隔时间:")
-    timeout_cnt =  input("$ 请输入判定失败的所需检测次数:")
+    friend_name = input("$ 请输入微信好友，想把消息发给谁，(不输入为'文件传输助手'):")
+    if not friend_name:
+        friend_name = "文件传输助手"
+    print("The friend's name is: " + friend_name)
+    print("-------------------------------------------------------------")
+    print("$ 选择查询间隔时间和文件不更新后判定失败的检测次数")
+    dft_interval_sec = 10
+    dft_timeout_cnt = 12
+    interval_sec = input("$ 请输入查询间隔时间(不输入为"+str(dft_interval_sec)+"s):")
+    timeout_cnt =  input("$ 请输入判定失败的所需检测次数(不输入为" + str(dft_timeout_cnt) + "次):")
     if interval_sec == "":
-        interval_sec = 20
+        interval_sec = dft_interval_sec
     else :
         interval_sec = int(interval_sec)
     
     if timeout_cnt == "":
-        timeout_cnt = 3
+        timeout_cnt = dft_timeout_cnt
     else:
         timeout_cnt = int(timeout_cnt)
 
     print("查询间隔时间" + str(interval_sec) + "s" + "; 文件不更新后判定失败的检测次数" + str(timeout_cnt) + "次")
     print("-------------------------------------------------------------")
-    return friend_name, check_strs, apptype_dic[key_input], interval_sec, timeout_cnt
+    return logApp_type, friend_name, check_strs, apptype_dic[key_input], interval_sec, timeout_cnt
 
 # Main function
 if __name__ == '__main__':
     contents = []
-    default_check_dic = {"安路软件关键词": "Generate bits file", "vivado软件关键词": "Generate bitstream successfully"}
+    default_check_dic = {"安路软件关键词": "Generate bits file"}
     default_apptype_dic = {"0": "wechat", "1": "wechat_work"}
-    friend_name, check_strs, app_type, interval_sec, timeout_cnt = say_hello(default_check_dic, default_apptype_dic)
-    log_file_path = select_file()
-    continuously_check_log_thread = threading.Thread(target=continuously_check_log, args=(log_file_path, contents, check_strs, interval_sec, timeout_cnt , 20))
+    logApp_type, friend_name, check_strs, app_type, interval_sec, timeout_cnt = say_hello(default_check_dic, default_apptype_dic)
+    log_file_path = select_file(logApp_type)
+    
+    continuously_check_log_thread = threading.Thread(target=continuously_check_log, args=(logApp_type, log_file_path, contents, check_strs, interval_sec, timeout_cnt , 20))
     continuously_check_log_thread.start()
     continuously_check_log_thread.join()  # Wait for log checking thread to complete
     send_msg(friend_name, contents, app_type)
