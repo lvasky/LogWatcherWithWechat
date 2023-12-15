@@ -212,7 +212,7 @@ def say_hello(check_dic , apptype_dic):
     if logApp_type == LogAppType.OTHER:
         print("$ 默认采用以下检测关键词:")
         for key, value in check_dic.items():
-            print("* " + key + " : " + + "\"" + value + "\"")
+            print("* " + key + " : " + "\"" + value + "\"")
             check_strs.append(value)
         print("-------------------------------------------------------------")
         if section_name in ini_contents and 'keyword' in ini_contents[section_name]:
@@ -259,21 +259,20 @@ def say_hello(check_dic , apptype_dic):
     dft_timeout_cnt = 12
     if section_name in ini_contents and 'timeout' in ini_contents[section_name]:
         interval_sec = dft_interval_sec
-        timeout_cnt = ini_contents[section_name]['timeout']
+        timeout_cnt = int(ini_contents[section_name]['timeout'])
     else:
         print("$ 选择查询间隔时间和文件不更新后判定失败的检测次数")
         interval_sec = input("$ 请输入查询间隔时间(不输入为"+str(dft_interval_sec)+"s):")
         timeout_cnt =  input("$ 请输入判定失败的所需检测次数timeout(不输入为" + str(dft_timeout_cnt) + "次):")
-    
-    if interval_sec == "":
-        interval_sec = dft_interval_sec
-    else :
-        interval_sec = int(interval_sec)
-    
-    if timeout_cnt == "":
-        timeout_cnt = dft_timeout_cnt
-    else:
-        timeout_cnt = int(timeout_cnt)
+        if interval_sec == "":
+            interval_sec = dft_interval_sec
+        else :
+            interval_sec = int(interval_sec)
+        
+        if timeout_cnt == "":
+            timeout_cnt = dft_timeout_cnt
+        else:
+            timeout_cnt = int(timeout_cnt)
 
     print("查询间隔时间" + str(interval_sec) + "s" + "; 文件不更新后判定失败的检测次数" + str(timeout_cnt) + "次")
     print("-------------------------------------------------------------")
