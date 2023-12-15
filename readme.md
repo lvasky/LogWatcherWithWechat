@@ -3,10 +3,24 @@
 ## 功能介绍
 
 - 支持vivado软件/安路fpga软件的log，当检测到bit文件生成时结束，并微信提醒
-- 支持自定义检测关键词
-- 支持wechat，wechat business
-- 支持发送给不同的好友
-- 支持超时时间和轮询间隔时间自定义
+- 支持ini文件或命令行提示词来输入参数
+  - 支持自定义检测关键词
+  - 支持wechat，wechat business
+  - 支持发送给不同的好友
+  - 支持超时时间和轮询间隔时间自定义
+
+
+# "info.ini"文件格式
+
+```ini
+[info]
+logapp = 0	
+apptype = 0 
+friend = 任务传输助手
+timeout = 6
+```
+
+[注]: 文件编码gb2312
 
 ## 软件使用流程图
 

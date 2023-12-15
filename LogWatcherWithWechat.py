@@ -166,9 +166,32 @@ def input_num(word):
     except ValueError:
         num = 0
     return num
+
+# function to read a ini file and return a dictionary
+import configparser
+def read_ini_file(file_path):
+    # Create a ConfigParser object
+    config = configparser.ConfigParser()
+
+    # Read the INI file
+    config.read(file_path)
+
+    # Initialize an empty dictionary to store the contents
+    ini_dict = {}
+
+    # Iterate through sections and options to populate the dictionary
+    for section in config.sections():
+        ini_dict[section] = {}
+        for option in config.options(section):
+            ini_dict[section][option] = config.get(section, option)
+
+    return ini_dict
+    
 # Function to prompt user input
 def say_hello(check_dic , apptype_dic):
     check_strs = []
+    ini_contents = read_ini_file("info.ini")
+    section_name = 'info'
     print("-------------------------------------------------------------")
     print("$             hello , welcome to use this program !      ")
     print("$ 这个程序帮助您在检测fpga软件中的log文件,在编译完成后用微信提醒您.")
@@ -177,10 +200,15 @@ def say_hello(check_dic , apptype_dic):
     print("* 请确保你的微信电脑版已经登录了.")
     print("* 请确保你的fpga软件已经开始运行了.")
     print("-------------------------------------------------------------")
-    print("$ 选择要监控的产生log文件的软件类型: \n  0 - 其他(监控用户选择的log文件及其关键词) , \n  1 - vivado软件(监控vivado目录的synth和impl)")
-    logApp_type = lambda:input_num("$ 请输入软件类型序号(不填为0):")
-    logApp_type = logApp_type()
+    print("$ 选择要监控的产生log文件的软件类型: \n\t0 - 其他(监控用户选择的log文件及其关键词) \n\t1 - vivado软件(监控vivado目录的synth和impl)")
+    if section_name in ini_contents and 'logapp' in ini_contents[section_name]:
+        logApp_type = LogAppType(int(ini_contents[section_name]['logapp']))
+    else:
+        logApp_type = lambda:input_num("$ 请输入软件类型序号(不填为0):")
+        logApp_type = logApp_type()
     
+    print("最终选择的log软件类型是:" + str(logApp_type))
+
     if logApp_type == LogAppType.OTHER.value:
         print("$ 默认采用以下检测关键词:")
         for key, value in check_dic.items():
@@ -202,25 +230,37 @@ def say_hello(check_dic , apptype_dic):
     print("-------------------------------------------------------------")
     print("$ 可供选择的通信软件列表:")
     for key, value in apptype_dic.items():
-        print("* " + key + " : " + value)
-    key_input = input("$ 请选择要使用的通信软件(不输入为wechat):")
-    # if key_input == "":
-    #     key_input = "0"
+        print("\t* " + key + " : " + value)
+    
+    if section_name in ini_contents and 'apptype' in ini_contents[section_name]:
+        key_input = ini_contents[section_name]['apptype']
+    else:
+        key_input = input("$ 请选择要使用的通信软件(不输入为wechat):")
+    
     if key_input not in set(apptype_dic.keys()):
         key_input = "0"
         
     print("最终选择的软件是:" + apptype_dic[key_input])
     print("-------------------------------------------------------------")
-    friend_name = input("$ 请输入微信好友，想把消息发给谁，(不输入为'文件传输助手'):")
+    if section_name in ini_contents and 'friend' in ini_contents[section_name]:
+        friend_name = ini_contents[section_name]['friend']
+    else:
+        friend_name = input("$ 请输入微信好友，想把消息发给谁，(不输入为'文件传输助手'):")
+    
     if not friend_name:
         friend_name = "文件传输助手"
     print("The friend's name is: " + friend_name)
     print("-------------------------------------------------------------")
-    print("$ 选择查询间隔时间和文件不更新后判定失败的检测次数")
     dft_interval_sec = 10
     dft_timeout_cnt = 12
-    interval_sec = input("$ 请输入查询间隔时间(不输入为"+str(dft_interval_sec)+"s):")
-    timeout_cnt =  input("$ 请输入判定失败的所需检测次数(不输入为" + str(dft_timeout_cnt) + "次):")
+    if section_name in ini_contents and 'timeout' in ini_contents[section_name]:
+        interval_sec = dft_interval_sec
+        timeout_cnt = ini_contents[section_name]['timeout']
+    else:
+        print("$ 选择查询间隔时间和文件不更新后判定失败的检测次数")
+        interval_sec = input("$ 请输入查询间隔时间(不输入为"+str(dft_interval_sec)+"s):")
+        timeout_cnt =  input("$ 请输入判定失败的所需检测次数timeout(不输入为" + str(dft_timeout_cnt) + "次):")
+    
     if interval_sec == "":
         interval_sec = dft_interval_sec
     else :
