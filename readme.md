@@ -11,7 +11,7 @@
 
 
 # "info.ini"文件格式
-
+> 文件编码gb2312
 ```ini
 [info]
 logapp = 0	
@@ -19,8 +19,6 @@ apptype = 0
 friend = 任务传输助手
 timeout = 6
 ```
-
-[注]: 文件编码gb2312
 
 ## 软件使用流程图
 
