@@ -108,7 +108,7 @@ def continuously_check_log(logApp_type, log_file_path, contents, check_strs, int
 
     while not stop_event.is_set():
         # vivado软件需要检测synth和impl两个log文件
-        if logApp_type == LogAppType.VIVADO.value :
+        if logApp_type == LogAppType.VIVADO :
             if not synthesis_end_flag:
                 synthesis_end_flag, last_lines = check_last_lines_of_log(log_file_path + "/synth_1/runme.log", contents, ["synth_design completed successfully"])
             elif synthesis_end_flag and not found:
@@ -145,7 +145,7 @@ def select_file(logApp_type):
     root.attributes("-topmost", True)
     root.withdraw()
     
-    if logApp_type == LogAppType.VIVADO.value:
+    if logApp_type == LogAppType.VIVADO:
         print("$ 选择要监控的vivado工程下的proj_name.runs目录")
         time.sleep(2)
         file_path = filedialog.askdirectory()
@@ -205,27 +205,31 @@ def say_hello(check_dic , apptype_dic):
         logApp_type = LogAppType(int(ini_contents[section_name]['logapp']))
     else:
         logApp_type = lambda:input_num("$ 请输入软件类型序号(不填为0):")
-        logApp_type = logApp_type()
+        logApp_type = LogAppType(logApp_type())
     
     print("最终选择的log软件类型是:" + str(logApp_type))
 
-    if logApp_type == LogAppType.OTHER.value:
+    if logApp_type == LogAppType.OTHER:
         print("$ 默认采用以下检测关键词:")
         for key, value in check_dic.items():
             print("* " + key + " : " + value)
             check_strs.append(value)
         print("-------------------------------------------------------------")
-        if input("$ 是否需要修改关键词？(y/n)") == "y":
-            check_strs = []
-            while True:
-                value = input("$ 请输入检测关键词(输入q退出):")
-                if value in ["q", ""]:
-                    break
-                check_strs.append(value)
-        
-        print("$ 以下为要生效的关键词:")
-        for check_str in check_strs:
-            print("* " + check_str)
+        if section_name in ini_contents and 'keyword' in ini_contents[section_name]:
+            keyword = ini_contents[section_name]['keyword']
+            print("$ 检测到ini文件,以下为要生效的关键词:\n\t" + keyword)
+        else:
+            if input("$ 是否需要修改关键词？(y/n)") == "y":
+                check_strs = []
+                while True:
+                    value = input("$ 请输入检测关键词(输入q退出):")
+                    if value in ["q", ""]:
+                        break
+                    check_strs.append(value)
+            
+            print("$ 以下为要生效的关键词:")
+            for check_str in check_strs:
+                print("* " + check_str)
 
     print("-------------------------------------------------------------")
     print("$ 可供选择的通信软件列表:")
