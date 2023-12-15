@@ -202,6 +202,7 @@ def say_hello(check_dic , apptype_dic):
     print("-------------------------------------------------------------")
     print("$ 选择要监控的产生log文件的软件类型: \n\t0 - 其他(监控用户选择的log文件及其关键词) \n\t1 - vivado软件(监控vivado目录的synth和impl)")
     if section_name in ini_contents and 'logapp' in ini_contents[section_name]:
+        print("$ 检测到ini文件中存在logapp字段")
         logApp_type = LogAppType(int(ini_contents[section_name]['logapp']))
     else:
         logApp_type = lambda:input_num("$ 请输入软件类型序号(不填为0):")
@@ -210,34 +211,41 @@ def say_hello(check_dic , apptype_dic):
     print("最终选择的log软件类型是:" + str(logApp_type))
 
     if logApp_type == LogAppType.OTHER:
-        print("$ 默认采用以下检测关键词:")
-        for key, value in check_dic.items():
-            print("* " + key + " : " + "\"" + value + "\"")
-            check_strs.append(value)
         print("-------------------------------------------------------------")
-        if section_name in ini_contents and 'keyword' in ini_contents[section_name]:
-            keyword = ini_contents[section_name]['keyword']
-            print("$ 检测到ini文件,以下为要生效的关键词:\n\t" + "\"" + keyword + "\"")
+        if section_name in ini_contents and 'keyword1' in ini_contents[section_name]:
+            print("$ 检测到ini文件中存在keyword字段")
+            check_strs = []
+            # 如果ini文件中有keyword1,keyword2,keyword3等字段
+            for i in range(1, 10):
+                if 'keyword' + str(i) in ini_contents[section_name]:
+                    check_strs.append(ini_contents[section_name]['keyword' + str(i)])
+                else:
+                    break
         else:
+            print("$ 默认采用以下检测关键词:")
+            for key, value in check_dic.items():
+                print("* " + key + " : " + "\"" + value + "\"")
+                check_strs.append(value)
             if input("$ 是否需要修改关键词？(y/n)") == "y":
-                check_strs = []
-                while True:
-                    value = input("$ 请输入检测关键词(输入q退出):")
-                    if value in ["q", ""]:
-                        break
-                    check_strs.append(value)
+                    check_strs = []
+                    while True:
+                        value = input("$ 请输入检测关键词(输入q退出):")
+                        if value in ["q", ""]:
+                            break
+                        check_strs.append(value)
             
-            print("$ 以下为要生效的关键词:")
-            for check_str in check_strs:
-                print("* " + check_str)
+        print("$ 以下为要生效的关键词:")
+        for check_str in check_strs:
+            print("\t" + check_str)
 
     print("-------------------------------------------------------------")
     print("$ 可供选择的通信软件列表:")
     for key, value in apptype_dic.items():
         print("\t* " + key + " : " + value)
     
-    if section_name in ini_contents and 'apptype' in ini_contents[section_name]:
-        key_input = ini_contents[section_name]['apptype']
+    if section_name in ini_contents and 'chatapp' in ini_contents[section_name]:
+        print("$ 检测到ini文件中存在chatapp字段")
+        key_input = ini_contents[section_name]['chatapp']
     else:
         key_input = input("$ 请选择要使用的通信软件(不输入为wechat):")
     
@@ -247,6 +255,7 @@ def say_hello(check_dic , apptype_dic):
     print("最终选择的软件是:" + apptype_dic[key_input])
     print("-------------------------------------------------------------")
     if section_name in ini_contents and 'friend' in ini_contents[section_name]:
+        print("$ 检测到ini文件中存在friend字段")
         friend_name = ini_contents[section_name]['friend']
     else:
         friend_name = input("$ 请输入微信好友，想把消息发给谁，(不输入为'文件传输助手'):")
@@ -258,6 +267,7 @@ def say_hello(check_dic , apptype_dic):
     dft_interval_sec = 10
     dft_timeout_cnt = 12
     if section_name in ini_contents and 'timeout' in ini_contents[section_name]:
+        print("$ 检测到ini文件中存在timeout字段")
         interval_sec = dft_interval_sec
         timeout_cnt = int(ini_contents[section_name]['timeout'])
     else:

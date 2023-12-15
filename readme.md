@@ -13,13 +13,15 @@
 # "info.ini"文件格式
 > 1. 文件编码gb2312
 > 2. 支持部分参数输入，没有输入的参数命令行提示输入
+> 3. keyword最多10个
 ```ini
 [info]
-logapp = 0	
-apptype = 0 
+logapp = 0
+chatapp = 1
 friend = 任务传输助手
 timeout = 6
-keyword = Generate bits file
+keyword1 = Generate bits file
+keyword2 = others want to watch
 ```
 
 ## 软件使用流程图
