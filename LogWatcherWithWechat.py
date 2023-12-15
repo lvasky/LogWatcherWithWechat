@@ -212,12 +212,12 @@ def say_hello(check_dic , apptype_dic):
     if logApp_type == LogAppType.OTHER:
         print("$ 默认采用以下检测关键词:")
         for key, value in check_dic.items():
-            print("* " + key + " : " + value)
+            print("* " + key + " : " + + "\"" + value + "\"")
             check_strs.append(value)
         print("-------------------------------------------------------------")
         if section_name in ini_contents and 'keyword' in ini_contents[section_name]:
             keyword = ini_contents[section_name]['keyword']
-            print("$ 检测到ini文件,以下为要生效的关键词:\n\t" + keyword)
+            print("$ 检测到ini文件,以下为要生效的关键词:\n\t" + "\"" + keyword + "\"")
         else:
             if input("$ 是否需要修改关键词？(y/n)") == "y":
                 check_strs = []
