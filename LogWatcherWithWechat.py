@@ -47,16 +47,28 @@ def check_input():
     input("按任意键停止倒计时")
     stop_event.set()
 
-def app_hotkey(app_type):
+def hotkey_SendMsg(friend, contents):
+    pyperclip.copy(friend)
+    pyautogui.hotkey('ctrl', 'v')
+    time.sleep(1)
+    pyautogui.press('enter')
+
+    for msg in contents:
+        send(msg)
+        time.sleep(0.1)
+
+def hotkey_GetSearchBox(app_type):
     if app_type == "wechat":
         pyautogui.hotkey('ctrl', 'alt', 'w')
         pyautogui.hotkey('ctrl', 'f')
+        return True
     elif app_type == "wechat_work":
         pyautogui.hotkey('shift', 'alt', 's')
         pyautogui.hotkey('ctrl', 'f')
+        return True
     else:
-        pyautogui.hotkey('ctrl', 'alt', 'w')
-        pyautogui.hotkey('ctrl', 'f')
+        print("没有对应chatapp,不发送消息")
+        return False
     
 # Function to send messages to a friend
 def send_msg(friend, contents , app_type="wechat"):
@@ -72,16 +84,10 @@ def send_msg(friend, contents , app_type="wechat"):
         print(5 - i)
         time.sleep(1)
 
-    print("开始发送微信消息")
-    app_hotkey(app_type)
-    pyperclip.copy(friend)
-    pyautogui.hotkey('ctrl', 'v')
-    time.sleep(1)
-    pyautogui.press('enter')
-
-    for msg in contents:
-        send(msg)
-        time.sleep(0.1)
+    print("开始发送消息")
+    if hotkey_GetSearchBox(app_type) == False:
+        return
+    hotkey_SendMsg(friend, contents)
     print("发送完成")
 
 # Function to check the last lines of a log file
@@ -292,7 +298,7 @@ def say_hello(check_dic , apptype_dic):
 if __name__ == '__main__':
     contents = []
     default_check_dic = {"安路软件关键词": "Generate bits file"}
-    default_apptype_dic = {"0": "wechat", "1": "wechat_work"}
+    default_apptype_dic = {"0": "none", "1": "wechat", "2": "wechat_work"}
     logApp_type, friend_name, check_strs, app_type, interval_sec, timeout_cnt = say_hello(default_check_dic, default_apptype_dic)
     log_file_path = select_file(logApp_type)
     
