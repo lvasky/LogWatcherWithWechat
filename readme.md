@@ -16,12 +16,13 @@
 > 3. keyword是logapp选择others时的关键词，最多设置10个
 ```ini
 [info]
-logapp = 0 ; 0 - 其他(监控用户选择的log文件及其关键词) 1 - vivado软件(监控vivado目录的synth和impl)
-chatapp = 1 ; 0 - none, 1 - wechat , 2 - wechat_work
+logapp = 0 
+; 0 - 其他(监控用户选择的log文件及其关键词) 1 - vivado软件(监控vivado目录的synth和impl)
+chatapp = 0 
+; 0 - none, 1 - wechat , 2 - wechat_work
 friend = 任务传输助手
 timeout = 6
 keyword1 = Generate bits file
-keyword2 = others want to watch
 ```
 
 ## 软件使用流程图
